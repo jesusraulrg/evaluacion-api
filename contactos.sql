@@ -1,4 +1,4 @@
-CREATE TABLE if not exists contactos (
+CREATE TABLE contactos (
     email TEXT PRIMARY KEY,
     nombre TEXT,
     telefono TEXT
