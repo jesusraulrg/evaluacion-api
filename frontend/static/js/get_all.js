@@ -1,6 +1,6 @@
 function getAll() {
     var request = new XMLHttpRequest;
-    request.open('GET',"http://127.0.0.1:8000/contactos");
+    request.open('GET',"http://localhost:8000/contactos");
     request.send();
 
     request.onload = (e) => {

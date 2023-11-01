@@ -1,67 +1,63 @@
 import sqlite3
-from fastapi import FastAPI
-from pydantic import BaseModel
+from flask import Flask, request, jsonify, render_template
+
+app = Flask(__name__)
 
 conn = sqlite3.connect("contactos.db")
 
-app = FastAPI()
+class Contacto:
+    def __init__(self, email, nombre, telefono):
+        self.email = email
+        self.nombre = nombre
+        self.telefono = telefono
 
-class Contacto(BaseModel):
-    email: str
-    nombre: str
-    telefono: str
-
-@app.get('/')
+@app.route('/')
 def root():
-    return {"message" : "API de contactos con SQLITE"}
+    return jsonify({"message": "API de contactos con SQLite"})
 
-@app.post("/contactos")
-async def crear_contacto(contacto: Contacto):
-    """Crea un nuevo contacto."""
+@app.route('/contactos', methods=['POST'])
+def crear_contacto():
+    data = request.json
+    contacto = Contacto(data['email'], data['nombre'], data['telefono'])
     connection = conn.cursor()
     connection.execute('INSERT INTO contactos (email, nombre, telefono) VALUES (?, ?, ?)',
                       (contacto.email, contacto.nombre, contacto.telefono))
     conn.commit()
-    return contacto
+    return jsonify(data)
 
-@app.get("/contactos")
-async def obtener_contactos():
-    """Obtiene todos los contactos."""
+@app.route('/contactos', methods=['GET'])
+def obtener_contactos():
     connection = conn.cursor()
     connection.execute('SELECT * FROM contactos')
-    
-    contactos = []
-    for row in connection:
-        contacto = Contacto(email=row[0], nombre=row[1], telefono=row[2])
-        contactos.append(contacto)
-    
-    return contactos
+    contactos = [Contacto(email=row[0], nombre=row[1], telefono=row[2]) for row in connection]
+    return jsonify([contacto.__dict__ for contacto in contactos])
 
-@app.get("/contactos/{email}")
-async def obtener_contacto(email: str):
-    """Obtiene un contacto por su email."""
+@app.route('/contactos/<email>', methods=['GET'])
+def obtener_contacto(email):
     connection = conn.cursor()
     connection.execute('SELECT * FROM contactos WHERE email = ?', (email,))
-    
-    for row in connection:
+    row = connection.fetchone()
+    if row:
         contacto = Contacto(email=row[0], nombre=row[1], telefono=row[2])
-        return contacto
-    
-    return None
+        return jsonify(contacto.__dict__)
+    else:
+        return jsonify({"message": "Contacto no encontrado"})
 
-@app.put("/contactos/{email}")
-async def actualizar_contacto(email: str, contacto: Contacto):
-    """Actualiza un contacto."""
+@app.route('/contactos/<email>', methods=['PUT'])
+def actualizar_contacto(email):
+    data = request.json
     connection = conn.cursor()
     connection.execute('UPDATE contactos SET nombre = ?, telefono = ? WHERE email = ?',
-                      (contacto.nombre, contacto.telefono, email))
+                      (data['nombre'], data['telefono'], email))
     conn.commit()
-    return contacto
+    return jsonify(data)
 
-@app.delete("/contactos/{email}")
-async def eliminar_contacto(email: str):
-    """Elimina un contacto."""
+@app.route('/contactos/<email>', methods=['DELETE'])
+def eliminar_contacto(email):
     connection = conn.cursor()
     connection.execute('DELETE FROM contactos WHERE email = ?', (email,))
     conn.commit()
-    return {"message": "Contacto eliminado"}
+    return jsonify({"message": "Contacto eliminado"})
+
+if __name__ == "__main__":
+    app.run()
