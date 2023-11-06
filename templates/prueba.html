@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba</title>
+</head>
+<body>
+    <h1>Prueba DOM</h1>
+    <label for="nombre">Nombre</label>
+    <input type="text" id="nombre">
+    <button value="Saludo" onclick="mensaje(document.getElementById('nombre'.value(nombre)))">Saludo</button>
+    <script type="text/javascript">
+        function mensaje(nombre){
+            alert("Hola" + nombre);
+        };
+    </script>
+</body>
+</html>
