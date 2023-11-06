@@ -59,5 +59,9 @@ def eliminar_contacto(email):
     conn.commit()
     return jsonify({"message": "Contacto eliminado"})
 
+@app.route('/prueba', methods=['GET', 'POST'])
+def prueba():
+    return render_template('prueba.html')
+
 if __name__ == "__main__":
     app.run()
